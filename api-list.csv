@@ -1,0 +1,5 @@
+S.No,Module,Method,Endpoint,Auth / Guard,Request Body / Params,Description
+1,Public API,POST,/api/v1/public/contact-form,API Key (ApiKeyGuard) + Rate Limit (ApiRateLimitGuard),"name (string, required); phone (string, required, format +countrycode e.g. +919876543210); email (string, optional); message (string, optional); tags (string[], optional)",Public-facing endpoint for a tenant's website contact form. Tenant is identified via the API key. No JWT/login needed - meant for external/public callers.
+2,API Keys,GET,/api/v1/api-keys,JWT (JwtAuthGuard),None,Lists all API keys created for the logged-in user's tenant (key hash excluded from response).
+3,API Keys,POST,/api/v1/api-keys,JWT (JwtAuthGuard),"name (string, required); permissions (string[], optional - one of read_only / send_messages / full_access, default full_access); expiresInDays (number, optional, 1-365)",Creates a new API key for the tenant. Raw key is returned only once at creation time.
+4,API Keys,DELETE,/api/v1/api-keys/:id,JWT (JwtAuthGuard),"id (path param, required)",Revokes (deactivates) an existing API key belonging to the tenant.
