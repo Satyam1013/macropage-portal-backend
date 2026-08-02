@@ -115,13 +115,15 @@ export class ContactService {
   }
 
   private async sendWhatsAppAlert(payload: TokenPayload): Promise<void> {
-    const baseUrl = this.config.get<string>("MACROPAGE_CONNECT_URL");
-    const apiKey = this.config.get<string>("MACROPAGE_CONNECT_API_KEY");
-    const alertNumber = this.config.get<string>("WHATSAPP_ALERT_NUMBER");
-    const templateName = this.config.get<string>(
-      "WHATSAPP_ALERT_TEMPLATE",
-      "test1213212",
-    );
+    const baseUrl = this.config.get<string>("MACROPAGE_CONNECT_URL")?.trim();
+    const apiKey = this.config.get<string>("MACROPAGE_CONNECT_API_KEY")?.trim();
+    const alertNumber = this.config
+      .get<string>("WHATSAPP_ALERT_NUMBER")
+      ?.trim()
+      .replace(/^["']|["']$/g, "");
+    const templateName = this.config
+      .get<string>("WHATSAPP_ALERT_TEMPLATE", "test1213212")
+      .trim();
 
     if (!baseUrl || !apiKey || !alertNumber) return;
 
