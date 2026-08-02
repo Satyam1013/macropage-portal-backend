@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import * as nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 interface SendMailOptions {
   to: string;
@@ -11,24 +11,25 @@ interface SendMailOptions {
 
 @Injectable()
 export class MailService {
-  private readonly transporter: nodemailer.Transporter;
+  private readonly resend: Resend;
   private readonly fromAddress: string;
 
   constructor(private readonly config: ConfigService) {
-    this.fromAddress = this.config.getOrThrow<string>("GMAIL_USER");
-    this.transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: this.fromAddress,
-        pass: this.config.getOrThrow<string>("GMAIL_APP_PASSWORD"),
-      },
-    });
+    this.resend = new Resend(this.config.getOrThrow<string>("RESEND_API_KEY"));
+    this.fromAddress = this.config.get<string>(
+      "MAIL_FROM",
+      "MacroPage <onboarding@resend.dev>",
+    );
   }
 
   async send(options: SendMailOptions): Promise<void> {
-    await this.transporter.sendMail({
-      from: `"MacroPage" <${this.fromAddress}>`,
+    const { error } = await this.resend.emails.send({
+      from: this.fromAddress,
       ...options,
     });
+
+    if (error) {
+      throw new Error(`Failed to send email: ${error.message}`);
+    }
   }
 }
