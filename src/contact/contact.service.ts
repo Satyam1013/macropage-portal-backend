@@ -141,9 +141,10 @@ export class ContactService {
         { headers: { "X-API-Key": apiKey } },
       );
     } catch (err) {
-      this.logger.error(
-        `WhatsApp alert failed: ${(err as Error).message}`,
-      );
+      const detail = axios.isAxiosError(err)
+        ? JSON.stringify(err.response?.data ?? err.message)
+        : (err as Error).message;
+      this.logger.error(`WhatsApp alert failed: ${detail}`);
     }
   }
 }
