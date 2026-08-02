@@ -11,7 +11,13 @@ async function bootstrap() {
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
   );
 
-  app.enableCors();
+  app.enableCors({
+    origin: [
+      "https://www.macropage.in",
+      "https://macropage.in",
+      "http://localhost:3000",
+    ],
+  });
   app.setGlobalPrefix("api/v1");
 
   const config = app.get(ConfigService);
