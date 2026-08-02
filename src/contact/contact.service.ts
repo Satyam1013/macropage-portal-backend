@@ -1,5 +1,6 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import axios from "axios";
 import * as crypto from "crypto";
 import { MailService } from "../mail/mail.service";
 import { SendOtpDto } from "./dto/send-otp.dto";
@@ -17,6 +18,7 @@ const OTP_TTL_MS = 10 * 60 * 1000;
 
 @Injectable()
 export class ContactService {
+  private readonly logger = new Logger(ContactService.name);
   private readonly secret: string;
   private readonly contactEmail: string;
 
@@ -107,6 +109,41 @@ export class ContactService {
       `,
     });
 
+    await this.sendWhatsAppAlert(payload);
+
     return { success: true };
+  }
+
+  private async sendWhatsAppAlert(payload: TokenPayload): Promise<void> {
+    const baseUrl = this.config.get<string>("MACROPAGE_CONNECT_URL");
+    const apiKey = this.config.get<string>("MACROPAGE_CONNECT_API_KEY");
+    const alertNumber = this.config.get<string>("WHATSAPP_ALERT_NUMBER");
+    const templateName = this.config.get<string>(
+      "WHATSAPP_ALERT_TEMPLATE",
+      "test1213212",
+    );
+
+    if (!baseUrl || !apiKey || !alertNumber) return;
+
+    const summary = `New lead: ${payload.name} (${payload.email}) - ${payload.message}`
+      .replace(/\s+/g, " ")
+      .slice(0, 300);
+
+    try {
+      await axios.post(
+        `${baseUrl}/api/v1/public/messages/send`,
+        {
+          phone: alertNumber,
+          name: payload.name,
+          templateName,
+          templateVars: { "1": summary },
+        },
+        { headers: { "X-API-Key": apiKey } },
+      );
+    } catch (err) {
+      this.logger.error(
+        `WhatsApp alert failed: ${(err as Error).message}`,
+      );
+    }
   }
 }
