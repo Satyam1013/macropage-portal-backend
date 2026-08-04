@@ -7,6 +7,7 @@ const BORDER = "#e6e9f5";
 const PAGE_BG = "#eef1fb";
 const BADGE_BG = "#eef1fb";
 const LOGO_URL = "https://www.macropage.in/macropage-logo-1.svg";
+const ENVELOPE_URL = "https://www.macropage.in/contact-email-envelope.png";
 const CONNECT_URL = "https://www.macropage.in/work/macropage-connect";
 
 // Gmail strips inline <svg>, so every icon here is plain text/emoji —
@@ -81,13 +82,15 @@ const wrapper = (preheader: string, body: string) => `
         <td align="center">
           <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px; width:100%; background:#ffffff; border:1px solid ${BORDER}; border-radius:18px; overflow:hidden;">
             <tr>
-              <td style="background:#ffffff; padding:24px 32px; border-bottom:1px solid ${BORDER};">
+              <td style="background:#ffffff; padding:8px 32px; border-bottom:1px solid ${BORDER};">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                   <tr>
                     <td valign="middle">
                       <img src="${LOGO_URL}" width="210" height="118" alt="MacroPage" style="display:block; height:118px; width:210px; max-width:210px; border:0;" />
                     </td>
-                    <td align="right" valign="middle" style="font-size:44px; line-height:1;">&#9993;&#65039;</td>
+                    <td align="right" valign="middle">
+                      <img src="${ENVELOPE_URL}" width="96" height="73" alt="" style="display:block; height:73px; width:96px; border:0;" />
+                    </td>
                   </tr>
                 </table>
               </td>
