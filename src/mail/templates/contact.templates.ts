@@ -1,14 +1,7 @@
 const NAVY = "#0f1642";
 const BLUE = "#3b6df0";
-const BLUE_BG = "#e8effe";
-const INDIGO = "#6366f1";
-const INDIGO_BG = "#eceafd";
-const PURPLE = "#8b5cf6";
-const PURPLE_BG = "#f1ebfe";
 const MINT = "#12b76a";
 const MINT_BG = "#eafbf1";
-const TEAL = "#14b8a6";
-const TEAL_BG = "#e2f7f4";
 const MUTED = "#68708b";
 const BORDER = "#e6e9f5";
 const PAGE_BG = "#eef1fb";
@@ -16,71 +9,34 @@ const BADGE_BG = "#eef1fb";
 const LOGO_URL = "https://www.macropage.in/macropage-logo-1.svg";
 const CONNECT_URL = "https://www.macropage.in/work/macropage-connect";
 
-const svg = (inner: string, size = 20) =>
-  `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;">${inner}</svg>`;
+// Gmail strips inline <svg>, so every icon here is plain text/emoji —
+// the one thing that reliably renders across Gmail, Outlook, and Apple Mail.
 
-const shieldCheckIcon = svg(
-  `<path d="M12 2l7 3v6c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V5l7-3z" fill="${MINT}"/><path d="M8.5 12.5l2.2 2.2L16 9.5" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`,
-  18,
-);
-
-const whatsappIcon = svg(
-  `<path d="M12 3.6A8.4 8.4 0 0 0 4.6 16l.4.7-.9 3.3 3.4-.9.7.4A8.4 8.4 0 1 0 12 3.6z" fill="#ffffff"/><path d="M9.4 8c-.2-.5-.4-.5-.6-.5h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.1s.9 2.4 1 2.6c.1.1 1.6 2.6 4 3.5 2 .8 2.4.6 2.8.6.4 0 1.3-.5 1.5-1 .2-.5.2-.9.1-1-.1-.1-.2-.2-.5-.3-.3-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8 1-.1.1-.3.2-.5.1-.3-.1-1.2-.4-2-1.2-.7-.6-1.1-1.4-1.2-1.6-.1-.2 0-.4.1-.5.1-.1.6-.7.7-.9.1-.2.1-.4 0-.5-.1-.3-.6-1.5-.7-1.9z" fill="${MINT}"/>`,
-  26,
-);
-
-const planeIcon = svg(`<path d="M3 11l18-8-8 18-2-8-8-2z" fill="${BLUE}"/>`, 14);
-const peopleIcon = svg(
-  `<circle cx="9" cy="8" r="3.2" fill="${INDIGO}"/><path d="M3.5 19c0-3.3 2.5-5.6 5.5-5.6s5.5 2.3 5.5 5.6" fill="${INDIGO}"/><circle cx="16.5" cy="9" r="2.4" fill="${INDIGO}" opacity="0.55"/>`,
-  14,
-);
-const sparkleIcon = svg(
-  `<path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2z" fill="${PURPLE}"/>`,
-  14,
-);
-const barsIcon = svg(
-  `<rect x="4" y="12" width="3.4" height="8" rx="1" fill="${MINT}"/><rect x="10.3" y="7" width="3.4" height="13" rx="1" fill="${MINT}"/><rect x="16.6" y="3" width="3.4" height="17" rx="1" fill="${MINT}"/>`,
-  14,
-);
-const linkIcon = svg(
-  `<path d="M8 16a3.2 3.2 0 0 1 0-6.4h2" stroke="${TEAL}" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M16 8a3.2 3.2 0 0 1 0 6.4h-2" stroke="${TEAL}" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M9 15l6-6" stroke="${TEAL}" stroke-width="2" stroke-linecap="round"/>`,
-  14,
-);
-
-const headerIllustration = `
-  <svg width="72" height="56" viewBox="0 0 72 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="6" r="2" fill="#c7d2fe"/>
-    <circle cx="66" cy="14" r="1.6" fill="#c7d2fe"/>
-    <rect x="8" y="10" width="44" height="30" rx="5" fill="${BLUE_BG}"/>
-    <path d="M8 15l22 15 22-15" stroke="#b7c6fb" stroke-width="2" fill="none"/>
-    <circle cx="52" cy="38" r="13" fill="${MINT}"/>
-    <path d="M46 38l3.6 3.6L58 33" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  </svg>
+const badgeCell = (emoji: string, label: string) => `
+  <td style="padding:0 6px 8px 0;">
+    <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+      <td style="background:${BADGE_BG}; border-radius:999px; padding:8px 14px; font-size:12px; font-weight:700; color:${NAVY}; white-space:nowrap;">
+        <span style="margin-right:6px; font-size:13px;">${emoji}</span>${label}
+      </td>
+    </tr></table>
+  </td>
 `;
 
-const badgePill = (icon: string, bg: string, label: string) => `
-  <span style="display:inline-block; background:${BADGE_BG}; border-radius:999px; padding:7px 14px 7px 8px; margin:4px 6px 0 0; white-space:nowrap;">
-    <table role="presentation" cellpadding="0" cellspacing="0" style="display:inline-table; vertical-align:middle;">
-      <tr>
-        <td style="padding-right:7px; vertical-align:middle;">
-          <table role="presentation" cellpadding="0" cellspacing="0" style="width:22px; height:22px; background:${bg}; border-radius:50%;">
-            <tr><td align="center" valign="middle">${icon}</td></tr>
-          </table>
-        </td>
-        <td style="font-size:12px; font-weight:700; color:${NAVY}; vertical-align:middle;">${label}</td>
-      </tr>
-    </table>
-  </span>
-`;
+const badgeRow = (items: Array<[string, string]>) =>
+  `<tr>${items.map(([emoji, label]) => badgeCell(emoji, label)).join("")}</tr>`;
 
 const featureBadges = `
-  <div style="margin-top:14px; line-height:1;">
-    ${badgePill(planeIcon, BLUE_BG, "Bulk Campaigns")}
-    ${badgePill(peopleIcon, INDIGO_BG, "Team Inbox")}
-    ${badgePill(sparkleIcon, PURPLE_BG, "AI Automation")}
-    ${badgePill(barsIcon, MINT_BG, "Smart Analytics")}
-    ${badgePill(linkIcon, TEAL_BG, "Integrations")}
-  </div>
+  <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:14px;">
+    ${badgeRow([
+      ["✈️", "Bulk Campaigns"],
+      ["👥", "Team Inbox"],
+      ["✨", "AI Automation"],
+    ])}
+    ${badgeRow([
+      ["📊", "Smart Analytics"],
+      ["🔗", "Integrations"],
+    ])}
+  </table>
 `;
 
 const connectPromo = `
@@ -99,7 +55,7 @@ const connectPromo = `
             </td>
             <td width="56" valign="top" align="right">
               <table role="presentation" cellpadding="0" cellspacing="0" style="width:52px; height:52px; background:${MINT}; border-radius:50%;">
-                <tr><td align="center" valign="middle">${whatsappIcon}</td></tr>
+                <tr><td align="center" style="font-size:24px; line-height:52px; text-align:center;">&#128172;</td></tr>
               </table>
             </td>
           </tr>
@@ -129,9 +85,9 @@ const wrapper = (preheader: string, body: string) => `
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                   <tr>
                     <td valign="middle">
-                      <img src="${LOGO_URL}" width="140" height="79" alt="MacroPage" style="display:block; height:79px; width:140px; border:0;" />
+                      <img src="${LOGO_URL}" width="210" height="118" alt="MacroPage" style="display:block; height:118px; width:210px; max-width:210px; border:0;" />
                     </td>
-                    <td align="right" valign="middle">${headerIllustration}</td>
+                    <td align="right" valign="middle" style="font-size:44px; line-height:1;">&#9993;&#65039;</td>
                   </tr>
                 </table>
               </td>
@@ -143,13 +99,9 @@ const wrapper = (preheader: string, body: string) => `
             </tr>
             <tr>
               <td style="padding:20px 32px; border-top:1px solid ${BORDER};">
-                <table role="presentation" cellpadding="0" cellspacing="0">
-                  <tr>
-                    <td style="font-size:12px; color:${MUTED}; vertical-align:middle;">
-                      <strong style="color:${NAVY};">MacroPage</strong> &middot; This is an automated message, please don't reply directly.
-                    </td>
-                  </tr>
-                </table>
+                <p style="margin:0; font-size:12px; color:${MUTED};">
+                  <strong style="color:${NAVY};">MacroPage</strong> &middot; This is an automated message, please don't reply directly.
+                </p>
               </td>
             </tr>
           </table>
@@ -178,12 +130,9 @@ export function otpEmailTemplate({ name, otp }: { name: string; otp: string }): 
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
       <tr>${digits}</tr>
     </table>
-    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
-      <tr>
-        <td style="padding-right:8px; vertical-align:middle;">${shieldCheckIcon}</td>
-        <td style="font-size:13px; color:${MUTED}; vertical-align:middle;">Didn't request this? You can safely ignore this email.</td>
-      </tr>
-    </table>
+    <p style="margin:0; font-size:13px; color:${MUTED}; text-align:center;">
+      <span style="color:${MINT}; font-weight:900; margin-right:6px;">&#10003;</span>Didn't request this? You can safely ignore this email.
+    </p>
     ${connectPromo}
   `;
 
