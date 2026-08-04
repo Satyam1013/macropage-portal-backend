@@ -1,0 +1,224 @@
+const NAVY = "#0f1642";
+const BLUE = "#3b6df0";
+const BLUE_BG = "#e8effe";
+const INDIGO = "#6366f1";
+const INDIGO_BG = "#eceafd";
+const PURPLE = "#8b5cf6";
+const PURPLE_BG = "#f1ebfe";
+const MINT = "#12b76a";
+const MINT_BG = "#eafbf1";
+const TEAL = "#14b8a6";
+const TEAL_BG = "#e2f7f4";
+const MUTED = "#68708b";
+const BORDER = "#e6e9f5";
+const PAGE_BG = "#eef1fb";
+const BADGE_BG = "#eef1fb";
+const LOGO_URL = "https://www.macropage.in/macropage-logo-1.svg";
+const CONNECT_URL = "https://www.macropage.in/work/macropage-connect";
+
+const svg = (inner: string, size = 20) =>
+  `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;">${inner}</svg>`;
+
+const shieldCheckIcon = svg(
+  `<path d="M12 2l7 3v6c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V5l7-3z" fill="${MINT}"/><path d="M8.5 12.5l2.2 2.2L16 9.5" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`,
+  18,
+);
+
+const whatsappIcon = svg(
+  `<path d="M12 3.6A8.4 8.4 0 0 0 4.6 16l.4.7-.9 3.3 3.4-.9.7.4A8.4 8.4 0 1 0 12 3.6z" fill="#ffffff"/><path d="M9.4 8c-.2-.5-.4-.5-.6-.5h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.1s.9 2.4 1 2.6c.1.1 1.6 2.6 4 3.5 2 .8 2.4.6 2.8.6.4 0 1.3-.5 1.5-1 .2-.5.2-.9.1-1-.1-.1-.2-.2-.5-.3-.3-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8 1-.1.1-.3.2-.5.1-.3-.1-1.2-.4-2-1.2-.7-.6-1.1-1.4-1.2-1.6-.1-.2 0-.4.1-.5.1-.1.6-.7.7-.9.1-.2.1-.4 0-.5-.1-.3-.6-1.5-.7-1.9z" fill="${MINT}"/>`,
+  26,
+);
+
+const planeIcon = svg(`<path d="M3 11l18-8-8 18-2-8-8-2z" fill="${BLUE}"/>`, 14);
+const peopleIcon = svg(
+  `<circle cx="9" cy="8" r="3.2" fill="${INDIGO}"/><path d="M3.5 19c0-3.3 2.5-5.6 5.5-5.6s5.5 2.3 5.5 5.6" fill="${INDIGO}"/><circle cx="16.5" cy="9" r="2.4" fill="${INDIGO}" opacity="0.55"/>`,
+  14,
+);
+const sparkleIcon = svg(
+  `<path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2z" fill="${PURPLE}"/>`,
+  14,
+);
+const barsIcon = svg(
+  `<rect x="4" y="12" width="3.4" height="8" rx="1" fill="${MINT}"/><rect x="10.3" y="7" width="3.4" height="13" rx="1" fill="${MINT}"/><rect x="16.6" y="3" width="3.4" height="17" rx="1" fill="${MINT}"/>`,
+  14,
+);
+const linkIcon = svg(
+  `<path d="M8 16a3.2 3.2 0 0 1 0-6.4h2" stroke="${TEAL}" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M16 8a3.2 3.2 0 0 1 0 6.4h-2" stroke="${TEAL}" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M9 15l6-6" stroke="${TEAL}" stroke-width="2" stroke-linecap="round"/>`,
+  14,
+);
+
+const headerIllustration = `
+  <svg width="72" height="56" viewBox="0 0 72 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="6" r="2" fill="#c7d2fe"/>
+    <circle cx="66" cy="14" r="1.6" fill="#c7d2fe"/>
+    <rect x="8" y="10" width="44" height="30" rx="5" fill="${BLUE_BG}"/>
+    <path d="M8 15l22 15 22-15" stroke="#b7c6fb" stroke-width="2" fill="none"/>
+    <circle cx="52" cy="38" r="13" fill="${MINT}"/>
+    <path d="M46 38l3.6 3.6L58 33" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </svg>
+`;
+
+const badgePill = (icon: string, bg: string, label: string) => `
+  <span style="display:inline-block; background:${BADGE_BG}; border-radius:999px; padding:7px 14px 7px 8px; margin:4px 6px 0 0; white-space:nowrap;">
+    <table role="presentation" cellpadding="0" cellspacing="0" style="display:inline-table; vertical-align:middle;">
+      <tr>
+        <td style="padding-right:7px; vertical-align:middle;">
+          <table role="presentation" cellpadding="0" cellspacing="0" style="width:22px; height:22px; background:${bg}; border-radius:50%;">
+            <tr><td align="center" valign="middle">${icon}</td></tr>
+          </table>
+        </td>
+        <td style="font-size:12px; font-weight:700; color:${NAVY}; vertical-align:middle;">${label}</td>
+      </tr>
+    </table>
+  </span>
+`;
+
+const featureBadges = `
+  <div style="margin-top:14px; line-height:1;">
+    ${badgePill(planeIcon, BLUE_BG, "Bulk Campaigns")}
+    ${badgePill(peopleIcon, INDIGO_BG, "Team Inbox")}
+    ${badgePill(sparkleIcon, PURPLE_BG, "AI Automation")}
+    ${badgePill(barsIcon, MINT_BG, "Smart Analytics")}
+    ${badgePill(linkIcon, TEAL_BG, "Integrations")}
+  </div>
+`;
+
+const connectPromo = `
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:32px; background:${MINT_BG}; border-radius:14px;">
+    <tr>
+      <td style="padding:26px 24px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td valign="top">
+              <p style="margin:0 0 8px; font-size:11px; font-weight:800; letter-spacing:0.08em; color:${MINT}; text-transform:uppercase;">Also from MacroPage</p>
+              <p style="margin:0 0 6px; font-size:16px; font-weight:800; color:${NAVY};">Automate WhatsApp with MacroPage Connect</p>
+              <p style="margin:0 0 18px; font-size:13px; line-height:1.6; color:${MUTED};">
+                We integrate the WhatsApp Business API into your CRM, alerts, and support flows end-to-end.
+              </p>
+              <a href="${CONNECT_URL}" style="display:inline-block; background:${NAVY}; color:#ffffff; font-size:13px; font-weight:700; text-decoration:none; padding:11px 20px; border-radius:8px;">See MacroPage Connect &rarr;</a>
+            </td>
+            <td width="56" valign="top" align="right">
+              <table role="presentation" cellpadding="0" cellspacing="0" style="width:52px; height:52px; background:${MINT}; border-radius:50%;">
+                <tr><td align="center" valign="middle">${whatsappIcon}</td></tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        ${featureBadges}
+      </td>
+    </tr>
+  </table>
+`;
+
+const wrapper = (preheader: string, body: string) => `
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MacroPage</title>
+  </head>
+  <body style="margin:0; padding:0; background:${PAGE_BG}; font-family: 'DM Sans', Helvetica, Arial, sans-serif;">
+    <span style="display:none; max-height:0; overflow:hidden; opacity:0;">${preheader}</span>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${PAGE_BG}; padding:40px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px; width:100%; background:#ffffff; border:1px solid ${BORDER}; border-radius:18px; overflow:hidden;">
+            <tr>
+              <td style="background:#ffffff; padding:24px 32px; border-bottom:1px solid ${BORDER};">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td valign="middle">
+                      <img src="${LOGO_URL}" width="112" height="64" alt="MacroPage" style="display:block; height:64px; width:112px; border:0;" />
+                    </td>
+                    <td align="right" valign="middle">${headerIllustration}</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:36px 32px 28px;">
+                ${body}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:20px 32px; border-top:1px solid ${BORDER};">
+                <table role="presentation" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="padding-right:8px; vertical-align:middle;">
+                      <img src="${LOGO_URL}" width="18" height="18" alt="" style="display:block; height:18px; width:18px; border:0;" />
+                    </td>
+                    <td style="font-size:12px; color:${MUTED}; vertical-align:middle;">
+                      <strong style="color:${NAVY};">MacroPage</strong> &middot; This is an automated message, please don't reply directly.
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+`;
+
+export function otpEmailTemplate({ name, otp }: { name: string; otp: string }): string {
+  const digits = otp
+    .split("")
+    .map(
+      (d) =>
+        `<td style="width:40px; height:52px; background:#f4f6ff; border:1px solid ${BORDER}; border-radius:10px; font-size:24px; font-weight:800; color:${NAVY}; text-align:center;">${d}</td>`,
+    )
+    .join(`<td style="width:6px;"></td>`);
+
+  const body = `
+    <h1 style="margin:0 0 20px; font-size:26px; font-weight:800; color:${NAVY}; line-height:1.2;">Verify your <span style="color:${BLUE};">email</span></h1>
+    <p style="margin:0 0 4px; font-size:14px; line-height:1.6; color:${MUTED};">Hi <strong style="color:${BLUE};">${name}</strong>,</p>
+    <p style="margin:0 0 28px; font-size:14px; line-height:1.6; color:${MUTED};">
+      Use the code below to submit your message to MacroPage. It expires in <strong style="color:${NAVY};">5 minutes</strong>.
+    </p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
+      <tr>${digits}</tr>
+    </table>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+      <tr>
+        <td style="padding-right:8px; vertical-align:middle;">${shieldCheckIcon}</td>
+        <td style="font-size:13px; color:${MUTED}; vertical-align:middle;">Didn't request this? You can safely ignore this email.</td>
+      </tr>
+    </table>
+    ${connectPromo}
+  `;
+
+  return wrapper(`Your MacroPage verification code is ${otp}`, body);
+}
+
+export function contactNotificationTemplate({
+  name,
+  email,
+  message,
+}: {
+  name: string;
+  email: string;
+  message: string;
+}): string {
+  const body = `
+    <h1 style="margin:0 0 20px; font-size:24px; font-weight:800; color:${NAVY}; line-height:1.2;">New contact form <span style="color:${BLUE};">submission</span></h1>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+      <tr>
+        <td style="padding:4px 0; font-size:13px; color:${MUTED}; width:80px;">Name</td>
+        <td style="padding:4px 0; font-size:14px; color:${NAVY}; font-weight:600;">${name}</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 0; font-size:13px; color:${MUTED};">Email</td>
+        <td style="padding:4px 0; font-size:14px; color:${NAVY}; font-weight:600;">
+          <a href="mailto:${email}" style="color:${BLUE}; text-decoration:none;">${email}</a>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0 0 8px; font-size:13px; color:${MUTED};">Message</p>
+    <p style="margin:0; white-space:pre-wrap; background:#f4f6ff; border:1px solid ${BORDER}; border-radius:10px; padding:16px; font-size:14px; line-height:1.6; color:${NAVY};">${message}</p>
+  `;
+
+  return wrapper(`New inquiry from ${name}`, body);
+}
