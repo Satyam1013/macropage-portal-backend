@@ -13,7 +13,7 @@ const MUTED = "#68708b";
 const BORDER = "#e6e9f5";
 const PAGE_BG = "#eef1fb";
 const BADGE_BG = "#eef1fb";
-const LOGO_URL = "https://www.macropage.in/macropage-connect-logo.svg";
+const LOGO_URL = "https://www.macropage.in/macropage-logo-1.svg";
 const CONNECT_URL = "https://www.macropage.in/work/macropage-connect";
 
 const svg = (inner: string, size = 20) =>
@@ -129,7 +129,7 @@ const wrapper = (preheader: string, body: string) => `
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                   <tr>
                     <td valign="middle">
-                      <img src="${LOGO_URL}" width="180" height="53" alt="MacroPage Connect" style="display:block; height:53px; width:180px; border:0;" />
+                      <img src="${LOGO_URL}" width="140" height="79" alt="MacroPage" style="display:block; height:79px; width:140px; border:0;" />
                     </td>
                     <td align="right" valign="middle">${headerIllustration}</td>
                   </tr>
