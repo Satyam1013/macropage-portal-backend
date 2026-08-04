@@ -26,7 +26,7 @@ const badgeRow = (items: Array<[string, string]>) =>
   `<tr>${items.map(([emoji, label]) => badgeCell(emoji, label)).join("")}</tr>`;
 
 const featureBadges = `
-  <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:14px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:20px;">
     ${badgeRow([
       ["✈️", "Bulk Campaigns"],
       ["👥", "Team Inbox"],
@@ -60,10 +60,10 @@ const connectPromo = `
             </td>
           </tr>
         </table>
-        ${featureBadges}
       </td>
     </tr>
   </table>
+  ${featureBadges}
 `;
 
 const wrapper = (preheader: string, body: string) => `
