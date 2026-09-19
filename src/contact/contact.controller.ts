@@ -1,19 +1,36 @@
 import { Body, Controller, Post } from "@nestjs/common";
 import { ContactService } from "./contact.service";
-import { SendOtpDto } from "./dto/send-otp.dto";
+import { SendEmailOtpDto } from "./dto/send-email-otp.dto";
+import { SendPhoneOtpDto } from "./dto/send-phone-otp.dto";
+import { SubmitContactDto } from "./dto/submit-contact.dto";
 import { VerifyOtpDto } from "./dto/verify-otp.dto";
 
 @Controller("contact")
 export class ContactController {
   constructor(private readonly contactService: ContactService) {}
 
-  @Post("send-otp")
-  sendOtp(@Body() dto: SendOtpDto) {
-    return this.contactService.sendOtp(dto);
+  @Post("email/send-otp")
+  sendEmailOtp(@Body() dto: SendEmailOtpDto) {
+    return this.contactService.sendEmailOtp(dto);
   }
 
-  @Post("verify")
-  verify(@Body() dto: VerifyOtpDto) {
-    return this.contactService.verifyOtp(dto);
+  @Post("email/verify-otp")
+  verifyEmailOtp(@Body() dto: VerifyOtpDto) {
+    return this.contactService.verifyOtp("email", dto);
+  }
+
+  @Post("phone/send-otp")
+  sendPhoneOtp(@Body() dto: SendPhoneOtpDto) {
+    return this.contactService.sendPhoneOtp(dto);
+  }
+
+  @Post("phone/verify-otp")
+  verifyPhoneOtp(@Body() dto: VerifyOtpDto) {
+    return this.contactService.verifyOtp("phone", dto);
+  }
+
+  @Post("submit")
+  submit(@Body() dto: SubmitContactDto) {
+    return this.contactService.submit(dto);
   }
 }

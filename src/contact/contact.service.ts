@@ -9,19 +9,26 @@ import axios from "axios";
 import * as crypto from "crypto";
 import { MailService } from "../mail/mail.service";
 import { contactNotificationTemplate, otpEmailTemplate } from "../mail/templates/contact.templates";
-import { SendOtpDto } from "./dto/send-otp.dto";
+import { SendEmailOtpDto } from "./dto/send-email-otp.dto";
+import { SendPhoneOtpDto } from "./dto/send-phone-otp.dto";
+import { SubmitContactDto } from "./dto/submit-contact.dto";
 import { VerifyOtpDto } from "./dto/verify-otp.dto";
 
+type Channel = "email" | "phone";
+type Purpose = `${Channel}-otp` | `${Channel}-proof`;
+
+// Every token is a signed, self-contained blob. An "-otp" token carries a hash
+// of the code we sent; a "-proof" token is what the visitor receives after
+// entering the right code and is what /contact/submit checks.
 interface TokenPayload {
-  name: string;
-  email: string;
-  phone: string;
-  message: string;
-  otpHash: string;
+  purpose: Purpose;
+  subject: string;
+  otpHash?: string;
   expiresAt: number;
 }
 
 const OTP_TTL_MS = 10 * 60 * 1000;
+const PROOF_TTL_MS = 30 * 60 * 1000;
 
 @Injectable()
 export class ContactService {
@@ -76,61 +83,68 @@ export class ContactService {
     }
   }
 
-  async sendOtp(dto: SendOtpDto) {
+  private issueOtp(channel: Channel, subject: string) {
     const otp = crypto.randomInt(100000, 1000000).toString();
-    const expiresAt = Date.now() + OTP_TTL_MS;
-    const token = this.sign({ ...dto, otpHash: this.hashOtp(otp), expiresAt });
-
-    // The same code goes out on every configured channel.
-    const attempts: Array<{ channel: "email" | "whatsapp"; run: Promise<void> }> = [
-      {
-        channel: "email",
-        run: this.mail.send({
-          to: dto.email,
-          subject: "Your verification code — MacroPage",
-          html: otpEmailTemplate({ name: dto.name, otp }),
-        }),
-      },
-    ];
-    if (this.otpTemplate) {
-      attempts.push({
-        channel: "whatsapp",
-        run: this.postWhatsAppTemplate(dto.phone, dto.name, this.otpTemplate, {
-          "1": otp,
-        }),
-      });
-    }
-
-    const results = await Promise.allSettled(attempts.map((a) => a.run));
-    const sentTo: string[] = [];
-    const failed: string[] = [];
-    results.forEach((result, i) => {
-      const { channel } = attempts[i];
-      if (result.status === "fulfilled") {
-        sentTo.push(channel);
-      } else {
-        failed.push(channel === "email" ? "email" : "WhatsApp number");
-        this.logger.error(
-          `OTP via ${channel} failed: ${(result.reason as Error).message}`,
-        );
-      }
+    const token = this.sign({
+      purpose: `${channel}-otp`,
+      subject,
+      otpHash: this.hashOtp(otp),
+      expiresAt: Date.now() + OTP_TTL_MS,
     });
+    return { otp, token };
+  }
 
-    // Both the email and the phone must be reachable, so any failure is an error.
-    if (failed.length > 0) {
+  private normalizeEmail(email: string): string {
+    return email.trim().toLowerCase();
+  }
+
+  async sendEmailOtp(dto: SendEmailOtpDto) {
+    const email = this.normalizeEmail(dto.email);
+    const { otp, token } = this.issueOtp("email", email);
+
+    try {
+      await this.mail.send({
+        to: email,
+        subject: "Your verification code — MacroPage",
+        html: otpEmailTemplate({ name: dto.name, otp }),
+      });
+    } catch (err) {
+      this.logger.error(`Email OTP failed: ${(err as Error).message}`);
       throw new ServiceUnavailableException(
-        `We couldn't send the verification code to your ${failed.join(" and ")}. Please check it and try again.`,
+        "We couldn't send the verification code to your email. Please check it and try again.",
       );
     }
 
-    return { token, sentTo };
+    return { token };
   }
 
-  async verifyOtp(dto: VerifyOtpDto) {
+  async sendPhoneOtp(dto: SendPhoneOtpDto) {
+    if (!this.otpTemplate) {
+      throw new ServiceUnavailableException(
+        "WhatsApp verification is not available right now. Please try again later.",
+      );
+    }
+    const { otp, token } = this.issueOtp("phone", dto.phone);
+
+    try {
+      await this.postWhatsAppTemplate(dto.phone, dto.name, this.otpTemplate, {
+        "1": otp,
+      });
+    } catch (err) {
+      this.logger.error(`WhatsApp OTP failed: ${(err as Error).message}`);
+      throw new ServiceUnavailableException(
+        "We couldn't send the verification code to your WhatsApp number. Please check it and try again.",
+      );
+    }
+
+    return { token };
+  }
+
+  verifyOtp(channel: Channel, dto: VerifyOtpDto) {
     const payload = this.verify(dto.token);
 
-    if (!payload) {
-      throw new BadRequestException("Invalid session. Please try again.");
+    if (!payload || payload.purpose !== `${channel}-otp` || !payload.otpHash) {
+      throw new BadRequestException("Invalid session. Please request a new code.");
     }
     if (Date.now() > payload.expiresAt) {
       throw new BadRequestException("Code expired. Please request a new one.");
@@ -141,24 +155,57 @@ export class ContactService {
       throw new BadRequestException("Incorrect code. Please try again.");
     }
 
+    return {
+      proof: this.sign({
+        purpose: `${channel}-proof`,
+        subject: payload.subject,
+        expiresAt: Date.now() + PROOF_TTL_MS,
+      }),
+    };
+  }
+
+  private assertProof(channel: Channel, proof: string, subject: string) {
+    const payload = this.verify(proof);
+    if (
+      !payload ||
+      payload.purpose !== `${channel}-proof` ||
+      payload.subject !== subject ||
+      Date.now() > payload.expiresAt
+    ) {
+      throw new BadRequestException(
+        `Please verify your ${channel === "email" ? "email" : "WhatsApp number"} first.`,
+      );
+    }
+  }
+
+  async submit(dto: SubmitContactDto) {
+    const email = this.normalizeEmail(dto.email);
+    this.assertProof("email", dto.emailProof, email);
+    this.assertProof("phone", dto.phoneProof, dto.phone);
+
     await this.mail.send({
       to: this.contactEmail,
-      replyTo: payload.email,
-      subject: `New inquiry from ${payload.name}`,
+      replyTo: email,
+      subject: `New inquiry from ${dto.name}`,
       html: contactNotificationTemplate({
-        name: payload.name,
-        email: payload.email,
-        phone: payload.phone,
-        message: payload.message,
+        name: dto.name,
+        email,
+        phone: dto.phone,
+        message: dto.message,
       }),
     });
 
-    await this.sendWhatsAppAlert(payload);
+    await this.sendWhatsAppAlert({ ...dto, email });
 
     return { success: true };
   }
 
-  private async sendWhatsAppAlert(payload: TokenPayload): Promise<void> {
+  private async sendWhatsAppAlert(payload: {
+    name: string;
+    email: string;
+    phone: string;
+    message: string;
+  }): Promise<void> {
     const alertNumber = this.config
       .get<string>("WHATSAPP_ALERT_NUMBER")
       ?.trim()

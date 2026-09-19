@@ -1,6 +1,6 @@
 import { IsEmail, IsString, Matches, MaxLength, MinLength } from "class-validator";
 
-export class SendOtpDto {
+export class SubmitContactDto {
   @IsString()
   @MinLength(2)
   @MaxLength(100)
@@ -18,4 +18,10 @@ export class SendOtpDto {
   @MinLength(10)
   @MaxLength(2000)
   message!: string;
+
+  @IsString()
+  emailProof!: string;
+
+  @IsString()
+  phoneProof!: string;
 }
