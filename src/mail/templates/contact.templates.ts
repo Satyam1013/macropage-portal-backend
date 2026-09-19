@@ -128,7 +128,7 @@ export function otpEmailTemplate({ name, otp }: { name: string; otp: string }): 
     <h1 style="margin:0 0 20px; font-size:26px; font-weight:800; color:${NAVY}; line-height:1.2;">Verify your <span style="color:${BLUE};">email</span></h1>
     <p style="margin:0 0 4px; font-size:14px; line-height:1.6; color:${MUTED};">Hi <strong style="color:${BLUE};">${name}</strong>,</p>
     <p style="margin:0 0 28px; font-size:14px; line-height:1.6; color:${MUTED};">
-      Use the code below to submit your message to MacroPage. It expires in <strong style="color:${NAVY};">5 minutes</strong>.
+      Use the code below to submit your message to MacroPage. It expires in <strong style="color:${NAVY};">10 minutes</strong>.
     </p>
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
       <tr>${digits}</tr>

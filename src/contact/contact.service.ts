@@ -21,7 +21,7 @@ interface TokenPayload {
   expiresAt: number;
 }
 
-const OTP_TTL_MS = 5 * 60 * 1000;
+const OTP_TTL_MS = 10 * 60 * 1000;
 
 @Injectable()
 export class ContactService {
