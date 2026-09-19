@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, Logger } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import axios from "axios";
 import * as crypto from "crypto";
@@ -10,8 +15,9 @@ import { VerifyOtpDto } from "./dto/verify-otp.dto";
 interface TokenPayload {
   name: string;
   email: string;
+  phone: string;
   message: string;
-  otp: string;
+  otpHash: string;
   expiresAt: number;
 }
 
@@ -22,6 +28,7 @@ export class ContactService {
   private readonly logger = new Logger(ContactService.name);
   private readonly secret: string;
   private readonly contactEmail: string;
+  private readonly otpTemplate?: string;
 
   constructor(
     private readonly mail: MailService,
@@ -31,6 +38,16 @@ export class ContactService {
     this.contactEmail =
       this.config.get<string>("CONTACT_EMAIL") ??
       this.config.getOrThrow<string>("GMAIL_USER");
+    this.otpTemplate = this.config.get<string>("WHATSAPP_OTP_TEMPLATE")?.trim();
+  }
+
+  // The token travels through the browser, so it must never contain the OTP
+  // itself — only a keyed hash that can't be reversed without the server secret.
+  private hashOtp(otp: string): string {
+    return crypto
+      .createHmac("sha256", this.secret)
+      .update(`otp:${otp}`)
+      .digest("base64url");
   }
 
   private sign(payload: TokenPayload): string {
@@ -60,17 +77,50 @@ export class ContactService {
   }
 
   async sendOtp(dto: SendOtpDto) {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = Date.now() + OTP_TTL_MS;
-    const token = this.sign({ ...dto, otp, expiresAt });
+    const token = this.sign({ ...dto, otpHash: this.hashOtp(otp), expiresAt });
 
-    await this.mail.send({
-      to: dto.email,
-      subject: "Your verification code — MacroPage",
-      html: otpEmailTemplate({ name: dto.name, otp }),
+    // The same code goes out on every configured channel; the visitor can
+    // enter whichever copy reaches them first.
+    const attempts: Array<{ channel: "email" | "whatsapp"; run: Promise<void> }> = [
+      {
+        channel: "email",
+        run: this.mail.send({
+          to: dto.email,
+          subject: "Your verification code — MacroPage",
+          html: otpEmailTemplate({ name: dto.name, otp }),
+        }),
+      },
+    ];
+    if (this.otpTemplate) {
+      attempts.push({
+        channel: "whatsapp",
+        run: this.postWhatsAppTemplate(dto.phone, dto.name, this.otpTemplate, {
+          "1": otp,
+        }),
+      });
+    }
+
+    const results = await Promise.allSettled(attempts.map((a) => a.run));
+    const sentTo: string[] = [];
+    results.forEach((result, i) => {
+      if (result.status === "fulfilled") {
+        sentTo.push(attempts[i].channel);
+      } else {
+        this.logger.error(
+          `OTP via ${attempts[i].channel} failed: ${(result.reason as Error).message}`,
+        );
+      }
     });
 
-    return { token };
+    if (sentTo.length === 0) {
+      throw new ServiceUnavailableException(
+        "We couldn't send the verification code. Please try again.",
+      );
+    }
+
+    return { token, sentTo };
   }
 
   async verifyOtp(dto: VerifyOtpDto) {
@@ -82,7 +132,9 @@ export class ContactService {
     if (Date.now() > payload.expiresAt) {
       throw new BadRequestException("Code expired. Please request a new one.");
     }
-    if (dto.otp !== payload.otp) {
+    const given = Buffer.from(this.hashOtp(dto.otp));
+    const expected = Buffer.from(payload.otpHash);
+    if (given.length !== expected.length || !crypto.timingSafeEqual(given, expected)) {
       throw new BadRequestException("Incorrect code. Please try again.");
     }
 
@@ -93,6 +145,7 @@ export class ContactService {
       html: contactNotificationTemplate({
         name: payload.name,
         email: payload.email,
+        phone: payload.phone,
         message: payload.message,
       }),
     });
@@ -103,8 +156,6 @@ export class ContactService {
   }
 
   private async sendWhatsAppAlert(payload: TokenPayload): Promise<void> {
-    const baseUrl = this.config.get<string>("MACROPAGE_CONNECT_URL")?.trim();
-    const apiKey = this.config.get<string>("MACROPAGE_CONNECT_API_KEY")?.trim();
     const alertNumber = this.config
       .get<string>("WHATSAPP_ALERT_NUMBER")
       ?.trim()
@@ -113,28 +164,52 @@ export class ContactService {
       .get<string>("WHATSAPP_ALERT_TEMPLATE", "test1213212")
       .trim();
 
-    if (!baseUrl || !apiKey || !alertNumber) return;
+    if (!this.connectConfigured() || !alertNumber) return;
 
-    const summary = `New lead: ${payload.name} (${payload.email}) - ${payload.message}`
+    const summary = `New lead: ${payload.name} (${payload.email}, ${payload.phone}) - ${payload.message}`
       .replace(/\s+/g, " ")
       .slice(0, 300);
 
     try {
+      await this.postWhatsAppTemplate(alertNumber, payload.name, templateName, {
+        "1": summary,
+      });
+    } catch (err) {
+      this.logger.error(`WhatsApp alert failed: ${(err as Error).message}`);
+    }
+  }
+
+  private connectConfigured(): boolean {
+    return Boolean(
+      this.config.get<string>("MACROPAGE_CONNECT_URL")?.trim() &&
+        this.config.get<string>("MACROPAGE_CONNECT_API_KEY")?.trim(),
+    );
+  }
+
+  private async postWhatsAppTemplate(
+    phone: string,
+    name: string,
+    templateName: string,
+    templateVars: Record<string, string>,
+  ): Promise<void> {
+    const baseUrl = this.config.get<string>("MACROPAGE_CONNECT_URL")?.trim();
+    const apiKey = this.config.get<string>("MACROPAGE_CONNECT_API_KEY")?.trim();
+    if (!baseUrl || !apiKey) {
+      throw new Error("MACROPAGE_CONNECT_URL / MACROPAGE_CONNECT_API_KEY not set");
+    }
+
+    try {
       await axios.post(
         `${baseUrl}/api/v1/public/messages/send`,
-        {
-          phone: alertNumber,
-          name: payload.name,
-          templateName,
-          templateVars: { "1": summary },
-        },
+        { phone, name, templateName, templateVars },
         { headers: { "X-API-Key": apiKey } },
       );
     } catch (err) {
-      const detail = axios.isAxiosError(err)
-        ? JSON.stringify(err.response?.data ?? err.message)
-        : (err as Error).message;
-      this.logger.error(`WhatsApp alert failed: ${detail}`);
+      throw new Error(
+        axios.isAxiosError(err)
+          ? JSON.stringify(err.response?.data ?? err.message)
+          : (err as Error).message,
+      );
     }
   }
 }

@@ -145,10 +145,12 @@ export function otpEmailTemplate({ name, otp }: { name: string; otp: string }): 
 export function contactNotificationTemplate({
   name,
   email,
+  phone,
   message,
 }: {
   name: string;
   email: string;
+  phone: string;
   message: string;
 }): string {
   const body = `
@@ -162,6 +164,12 @@ export function contactNotificationTemplate({
         <td style="padding:4px 0; font-size:13px; color:${MUTED};">Email</td>
         <td style="padding:4px 0; font-size:14px; color:${NAVY}; font-weight:600;">
           <a href="mailto:${email}" style="color:${BLUE}; text-decoration:none;">${email}</a>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:4px 0; font-size:13px; color:${MUTED};">Phone</td>
+        <td style="padding:4px 0; font-size:14px; color:${NAVY}; font-weight:600;">
+          <a href="tel:${phone}" style="color:${BLUE}; text-decoration:none;">${phone}</a>
         </td>
       </tr>
     </table>

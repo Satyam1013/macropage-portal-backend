@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MaxLength, MinLength } from "class-validator";
+import { IsEmail, IsString, Matches, MaxLength, MinLength } from "class-validator";
 
 export class SendOtpDto {
   @IsString()
@@ -8,6 +8,11 @@ export class SendOtpDto {
 
   @IsEmail()
   email!: string;
+
+  @Matches(/^\+[1-9]\d{6,14}$/, {
+    message: "phone must be in international format, e.g. +919876543210",
+  })
+  phone!: string;
 
   @IsString()
   @MinLength(10)
