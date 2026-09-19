@@ -81,8 +81,7 @@ export class ContactService {
     const expiresAt = Date.now() + OTP_TTL_MS;
     const token = this.sign({ ...dto, otpHash: this.hashOtp(otp), expiresAt });
 
-    // The same code goes out on every configured channel; the visitor can
-    // enter whichever copy reaches them first.
+    // The same code goes out on every configured channel.
     const attempts: Array<{ channel: "email" | "whatsapp"; run: Promise<void> }> = [
       {
         channel: "email",
@@ -104,19 +103,23 @@ export class ContactService {
 
     const results = await Promise.allSettled(attempts.map((a) => a.run));
     const sentTo: string[] = [];
+    const failed: string[] = [];
     results.forEach((result, i) => {
+      const { channel } = attempts[i];
       if (result.status === "fulfilled") {
-        sentTo.push(attempts[i].channel);
+        sentTo.push(channel);
       } else {
+        failed.push(channel === "email" ? "email" : "WhatsApp number");
         this.logger.error(
-          `OTP via ${attempts[i].channel} failed: ${(result.reason as Error).message}`,
+          `OTP via ${channel} failed: ${(result.reason as Error).message}`,
         );
       }
     });
 
-    if (sentTo.length === 0) {
+    // Both the email and the phone must be reachable, so any failure is an error.
+    if (failed.length > 0) {
       throw new ServiceUnavailableException(
-        "We couldn't send the verification code. Please try again.",
+        `We couldn't send the verification code to your ${failed.join(" and ")}. Please check it and try again.`,
       );
     }
 
